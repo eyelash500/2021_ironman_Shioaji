@@ -48,14 +48,18 @@ class trader:
         return True
 
     def subscribe(self, contract):
+        print("訂閱中")
         self.api.quote.subscribe(contract, quote_type=sj.constant.QuoteType.Tick)
 
     def unsubscribe(self, contract):
         self.api.quote.unsubscribe(contract, quote_type=sj.constant.QuoteType.Tick)
+        print("取消訂閱")
 
 
 def scraper():
-    time.sleep(10)
+    print("start sleeping...")
+    time.sleep(30)
+    print("Wake up!!")
 
 
 timer = threading.Thread(target=scraper)  # 建立執行緒
@@ -63,18 +67,22 @@ timer = threading.Thread(target=scraper)  # 建立執行緒
 t = trader()
 t.login()
 t._get_subscribe()
-t.subscribe(t.api.Contracts.Futures.TXF["TXF202110"])
-timer.start()  # 執行
-t.quote.unsubscribe(t.Contracts.Futures.TXF["TXF202110"])
 
 
 @t.api.quote.on_quote
 def quote_callback(topic: str, quote: dict):
     """Print quote info.
 
-    已經沒有 from shioaji import TickSTKv1了，
+    此版本沒有 from shioaji import TickSTKv1了，
     所以不能用範例QuoteVersion.v1，
     只能用QuoteVersion.v0
     """
 
     print(f"Topic: {topic}, Quote: {quote}")
+
+
+t.subscribe(t.api.Contracts.Futures.TXF["TXF202110"])
+timer.start()  # 執行
+timer.join()  # 等待執行緒跑完
+
+t.unsubscribe(t.api.Contracts.Futures.TXF["TXF202110"])
